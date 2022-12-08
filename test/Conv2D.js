@@ -48,7 +48,7 @@ describe("Conv2D layer test", function () {
 
         const mape = ape/OUTPUT.out.length;
 
-        console.log("mape", mape);
+        console.log("mean absolute % error", mape);
 
         assert(mape < 0.05);
     });
@@ -86,7 +86,7 @@ describe("Conv2D layer test", function () {
 
         const mape = ape/OUTPUT.out.length;
 
-        console.log("mape", mape);
+        console.log("mean absolute % error", mape);
 
         assert(mape < 0.01);
     });

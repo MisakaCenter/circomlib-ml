@@ -47,7 +47,7 @@ describe("Dense layer test", function () {
 
         const mape = ape/OUTPUT.out.length;
 
-        console.log("mape", mape);
+        console.log("mean absolute % error", mape);
 
         assert (mape < 0.01);
     });
