@@ -39,22 +39,18 @@ describe("Conv2D layer test", function () {
 
         assert(Fr.eq(Fr.e(witness[0]),Fr.e(1)));
 
-        let ae = 0;
+        let ape = 0;
 
         for (var i=0; i<OUTPUT.out.length; i++) {
-            if (OUTPUT.out[i] == 0) {
-                ae += Math.abs(OUTPUT.out[i]-parseInt(Fr.toString(witness[i+1])));
-            }
-            else {
-                ae += Math.abs(OUTPUT.out[i]-parseInt(Fr.toString(witness[i+1])));
-            }
+            // console.log("actual", OUTPUT.out[i], "predicted", Fr.toString(witness[i+1])*OUTPUT.scale);
+            ape += Math.abs((OUTPUT.out[i]-parseInt(Fr.toString(witness[i+1]))*OUTPUT.scale)/OUTPUT.out[i]);
         }
 
-        const rmae = Math.sqrt(ae/OUTPUT.out.length)*OUTPUT.scale;
+        const mape = ape/OUTPUT.out.length;
 
-        console.log("rmae", rmae);
-        assert(rmae < 0.5);
+        console.log("mape", mape);
 
+        assert(mape < 0.05);
     });
 
     it("(28,28,1) -> (13,13,4)", async () => {
@@ -81,21 +77,17 @@ describe("Conv2D layer test", function () {
 
         assert(Fr.eq(Fr.e(witness[0]),Fr.e(1)));
 
-        let ae = 0;
+        let ape = 0;
 
         for (var i=0; i<OUTPUT.out.length; i++) {
-            if (OUTPUT.out[i] == 0) {
-                ae += Math.abs(OUTPUT.out[i]-parseInt(Fr.toString(witness[i+1])));
-            }
-            else {
-                ae += Math.abs(OUTPUT.out[i]-parseInt(Fr.toString(witness[i+1])));
-            }
+            // console.log("actual", OUTPUT.out[i], "predicted", Fr.toString(witness[i+1])*OUTPUT.scale);
+            ape += Math.abs((OUTPUT.out[i]-parseInt(Fr.toString(witness[i+1]))*OUTPUT.scale)/OUTPUT.out[i]);
         }
 
-        const rmae = Math.sqrt(ae/OUTPUT.out.length)*OUTPUT.scale;
+        const mape = ape/OUTPUT.out.length;
 
-        console.log("rmae", rmae);
-        assert(rmae < 0.5);
+        console.log("mape", mape);
 
+        assert(mape < 0.01);
     });
 });
