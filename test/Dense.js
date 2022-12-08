@@ -13,24 +13,42 @@ const assert = chai.assert;
 describe("Dense layer test", function () {
     this.timeout(100000000);
 
-    it("3 nodes -> 2 nodes", async () => {
-        const circuit = await wasm_tester(path.join(__dirname, "circuits", "Dense_test.circom"));
-        //await circuit.loadConstraints();
-        //assert.equal(circuit.nVars, 18);
-        //assert.equal(circuit.constraints.length, 6);
+    it("28*28 nodes -> 2 nodes", async () => {
 
-        const INPUT = {
-            "in": ["1","2","3"],
-            "weights": [["4","7"],["5","8"],["6","9"]],
-            "bias": ["10","11"]
+        let json = require("../models/dense_input.json");
+        let OUTPUT = require("../models/dense_output.json");
+
+        const circuit = await wasm_tester(path.join(__dirname, "circuits", "Dense_test.circom"));
+
+        let INPUT = {};
+
+        for (const [key, value] of Object.entries(json)) {
+            if (Array.isArray(value)) {
+                let tmpArray = [];
+                for (let i = 0; i < value.flat().length; i++) {
+                    tmpArray.push(Fr.e(value.flat()[i]));
+                }
+                INPUT[key] = tmpArray;
+            } else {
+                INPUT[key] = Fr.e(value);
+            }
         }
 
         const witness = await circuit.calculateWitness(INPUT, true);
 
-        //console.log(witness);
-
         assert(Fr.eq(Fr.e(witness[0]),Fr.e(1)));
-        assert(Fr.eq(Fr.e(witness[1]),Fr.e(1*4+2*5+3*6+10)));
-        assert(Fr.eq(Fr.e(witness[2]),Fr.e(1*7+2*8+3*9+11)));
+
+        let ape = 0;
+
+        for (var i=0; i<OUTPUT.out.length; i++) {
+            console.log("actual", OUTPUT.out[i], "predicted", Fr.toString(witness[i+1])*OUTPUT.scale);
+            ape += Math.abs((OUTPUT.out[i]-parseInt(Fr.toString(witness[i+1]))*OUTPUT.scale)/OUTPUT.out[i]);
+        }
+
+        const mape = ape/OUTPUT.out.length;
+
+        console.log("mape", mape);
+
+        assert (mape < 0.01);
     });
 });
