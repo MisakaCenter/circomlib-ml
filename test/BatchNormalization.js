@@ -16,33 +16,41 @@ const assert = chai.assert;
 describe("BatchNormalization layer test", function () {
     this.timeout(100000000);
 
-    it("(5,5,3) -> (5,5,3)", async () => {
+    it("(32,32,3) -> (32,32,3)", async () => {
         let json = require("../models/batchNormalization_input.json");
         let OUTPUT = require("../models/batchNormalization_output.json");
 
         const circuit = await wasm_tester(path.join(__dirname, "circuits", "batchNormalization_test.circom"));
 
-        const a = [];
-        const b = [];
+        let INPUT = {};
 
-        for (var i=0; i<json.a.length; i++) {
-            a.push(Fr.e(json.a[i]));
-            b.push(Fr.e(json.b[i]));
-        }
-
-        const INPUT = {
-            "in": json.in,
-            "a": a,
-            "b": b
+        for (const [key, value] of Object.entries(json)) {
+            if (Array.isArray(value)) {
+                let tmpArray = [];
+                for (let i = 0; i < value.flat().length; i++) {
+                    tmpArray.push(Fr.e(value.flat()[i]));
+                }
+                INPUT[key] = tmpArray;
+            } else {
+                INPUT[key] = Fr.e(value);
+            }
         }
 
         const witness = await circuit.calculateWitness(INPUT, true);
 
         assert(Fr.eq(Fr.e(witness[0]),Fr.e(1)));
 
-        for (var i=0; i<5*5*3; i++) {
-            assert((witness[i+1]-Fr.e(OUTPUT.out[i]))<Fr.e(1000));
-            assert((Fr.e(OUTPUT.out[i])-witness[i+1])<Fr.e(1000));
+        let ape = 0;
+
+        for (var i=0; i<OUTPUT.out.length; i++) {
+            // console.log("actual", OUTPUT.out[i], "predicted", Fr.toString(witness[i+1])*OUTPUT.scale);
+            ape += Math.abs((OUTPUT.out[i]-parseInt(Fr.toString(witness[i+1]))*OUTPUT.scale)/OUTPUT.out[i]);
         }
+
+        const mape = ape/OUTPUT.out.length;
+
+        console.log("mape", mape);
+
+        assert(mape < 0.1);
     });
 });
